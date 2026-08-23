@@ -1,10 +1,33 @@
+import os
+from pathlib import Path
+
 import requests
 import json
 
 CURRENT_SEASON = "2025"
 
-with open("APIKey.txt", "r") as file:
-    apikey = file.read()
+
+def load_env(path=".env"):
+    """Load KEY=VALUE pairs from a .env file into os.environ (existing vars win)."""
+    env_path = Path(__file__).resolve().parent / path
+    if not env_path.exists():
+        return
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+load_env()
+
+apikey = os.environ.get("TBA_API_KEY")
+if not apikey:
+    raise SystemExit(
+        "TBA_API_KEY is not set. Copy .env.example to .env and add your "
+        "The Blue Alliance API key."
+    )
 
 header = {"X-TBA-Auth-Key" : apikey}
 
